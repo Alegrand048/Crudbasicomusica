@@ -10,20 +10,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 data class Artista(
     val id: Int,
     val nombre: String,
-    val imagenResId: Int
+    val imagenResId: Int?,
+    val imagenUrl: String?
 )
 
 val listaArtistas = listOf(
-    Artista(1, "Mora", R.drawable.mora),
-    Artista(2, "Bad Bunny", R.drawable.badbunny),
-    Artista(3, "Feid", R.drawable.feid)
+    Artista(1, "Mora", R.drawable.mora, null),
+    Artista(2, "Bad Bunny", R.drawable.badbunny, null),
+    Artista(3, "Feid", null, "https://i.scdn.co/image/ab6761610000e5eb600ee3d2a14da8d038fa7bbf")
 )
 
 @Composable
@@ -52,6 +57,8 @@ fun PantallaInicio(navController: NavController) {
 
 @Composable
 fun ArtistaCardGrid(artista: Artista, onClick: () -> Unit) {
+    val context = LocalContext.current
+    
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -64,11 +71,24 @@ fun ArtistaCardGrid(artista: Artista, onClick: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = artista.imagenResId),
-                contentDescription = artista.nombre,
-                modifier = Modifier.size(140.dp)
-            )
+            if (artista.imagenUrl != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(artista.imagenUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = artista.nombre,
+                    modifier = Modifier.size(140.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = artista.imagenResId!!),
+                    contentDescription = artista.nombre,
+                    modifier = Modifier.size(140.dp)
+                )
+            }
+            
             Text(
                 text = artista.nombre,
                 style = MaterialTheme.typography.titleMedium,
